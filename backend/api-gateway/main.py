@@ -21,17 +21,6 @@ from typing import Optional
 
 import httpx
 import structlog
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
-from prometheus_client import Counter, Histogram, generate_latest
-from pydantic import BaseModel
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
-from starlette.responses import Response
-
 from auth import (
     TokenRequest,
     TokenResponse,
@@ -41,8 +30,18 @@ from auth import (
     get_current_user,
     require_scope,
 )
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import JSONResponse
 from middleware import RequestLoggingMiddleware
+from prometheus_client import Counter, Histogram, generate_latest
+from pydantic import BaseModel
 from routes import router
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+from starlette.responses import Response
 
 # ─── Structured Logging ───────────────────────────────────────────────────────
 structlog.configure(

@@ -7,10 +7,9 @@ Exposes retrieval benchmarking (F1@K, mAP, latency) over HTTP.
 import os
 from typing import List
 
+from evaluator import evaluate
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-
-from evaluator import evaluate
 
 app = FastAPI(title="GeoFusion Evaluation Service", version="1.0.0")
 
@@ -41,4 +40,5 @@ async def run_evaluation(req: EvalRequest):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="0.0.0.0", port=8005, reload=True)

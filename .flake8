@@ -1,10 +1,10 @@
 [flake8]
 max-line-length = 88
 extend-ignore =
-    E203,  # Whitespace before ':' (conflicts with black)
-    E501,  # Line too long (handled by black)
-    W503,  # Line break before binary operator
-    W504,  # Line break after binary operator
+    E203,
+    E501,
+    W503,
+    W504
 per-file-ignores =
     tests/*: S101, S105
 exclude =

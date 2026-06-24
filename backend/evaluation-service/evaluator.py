@@ -80,7 +80,9 @@ def evaluate(
     top_k_values: List[int],
 ) -> Dict:
     if GeoFusionRetriever is None:
-        raise RuntimeError("Could not import GeoFusionRetriever from retrieval-service.")
+        raise RuntimeError(
+            "Could not import GeoFusionRetriever from retrieval-service."
+        )
 
     retriever = GeoFusionRetriever(index_path=index_path)
     eval_set = load_eval_set(dataset_path)

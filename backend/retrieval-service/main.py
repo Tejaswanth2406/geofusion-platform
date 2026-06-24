@@ -14,9 +14,8 @@ import structlog
 from fastapi import FastAPI, HTTPException
 from prometheus_client import Counter, Histogram, generate_latest
 from pydantic import BaseModel
-from starlette.responses import Response
-
 from retrieval import GeoFusionRetriever
+from starlette.responses import Response
 
 # ─── Structured Logging ───────────────────────────────────────────────────────
 structlog.configure(

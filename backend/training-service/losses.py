@@ -63,9 +63,7 @@ class MultiModalContrastiveLoss(nn.Module):
 
     def __init__(self, temperature: float = 0.07):
         super().__init__()
-        self.temperature = nn.Parameter(
-            torch.tensor(temperature), requires_grad=False
-        )
+        self.temperature = nn.Parameter(torch.tensor(temperature), requires_grad=False)
         self.cross_entropy = nn.CrossEntropyLoss()
 
     def forward(
@@ -158,7 +156,7 @@ class TripletContrastiveLoss(nn.Module):
 
         # Positive distances: D(a_i, p_i) = 1 - Sim[i, i]
         pos_sim = sim_matrix.diagonal()  # (B,)
-        pos_dist = 1.0 - pos_sim         # (B,)
+        pos_dist = 1.0 - pos_sim  # (B,)
 
         if self.hard_negative:
             # Hard negative mining: find closest non-matching positive
@@ -166,7 +164,7 @@ class TripletContrastiveLoss(nn.Module):
             B = anchors.shape[0]
             mask = torch.eye(B, dtype=torch.bool, device=anchors.device)
             sim_matrix_masked = sim_matrix.masked_fill(mask, float("-inf"))
-            neg_sim, _ = sim_matrix_masked.max(dim=1)      # hardest negative
+            neg_sim, _ = sim_matrix_masked.max(dim=1)  # hardest negative
             neg_dist = 1.0 - neg_sim
         else:
             # Average over all negatives
@@ -258,7 +256,9 @@ class HybridGeoLoss(nn.Module):
     ):
         super().__init__()
         self.infonce = MultiModalContrastiveLoss(temperature=temperature)
-        self.triplet = TripletContrastiveLoss(margin=margin, hard_negative=hard_negative)
+        self.triplet = TripletContrastiveLoss(
+            margin=margin, hard_negative=hard_negative
+        )
         self.lambda_nce = lambda_nce
         self.lambda_triplet = lambda_triplet
 

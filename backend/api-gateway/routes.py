@@ -32,7 +32,11 @@ async def list_sensors():
             {"id": "optical", "name": "Sentinel-2 Optical", "bands": 13},
             {"id": "sar", "name": "Sentinel-1 SAR", "bands": 2},
             {"id": "landsat", "name": "Landsat-8", "bands": 11},
-            {"id": "multispectral", "name": "Custom Multispectral", "bands": "variable"},
+            {
+                "id": "multispectral",
+                "name": "Custom Multispectral",
+                "bands": "variable",
+            },
             {"id": "dem", "name": "Digital Elevation Model", "bands": 1},
         ]
     }

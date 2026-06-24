@@ -13,6 +13,7 @@ import numpy as np
 
 try:
     import faiss
+
     FAISS_AVAILABLE = True
 except ImportError:
     FAISS_AVAILABLE = False
@@ -118,15 +119,17 @@ class GeoFusionRetriever:
             if retrieval_mode == "same" and sensor and record.get("sensor") != sensor:
                 continue
 
-            results.append({
-                "id": record.get("id", str(idx)),
-                "sensor": record.get("sensor", "unknown"),
-                "similarity": float(score),
-                "location": {
-                    "lat": record.get("lat"),
-                    "lon": record.get("lon"),
-                },
-            })
+            results.append(
+                {
+                    "id": record.get("id", str(idx)),
+                    "sensor": record.get("sensor", "unknown"),
+                    "similarity": float(score),
+                    "location": {
+                        "lat": record.get("lat"),
+                        "lon": record.get("lon"),
+                    },
+                }
+            )
             if len(results) >= top_k:
                 break
 

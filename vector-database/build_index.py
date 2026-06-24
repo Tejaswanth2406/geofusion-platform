@@ -21,7 +21,9 @@ except ImportError as e:
     raise SystemExit("faiss is required: pip install faiss-cpu") from e
 
 
-def build_index(embeddings_dir: str, index_path: str, metadata_path: str, dim: int = 512):
+def build_index(
+    embeddings_dir: str, index_path: str, metadata_path: str, dim: int = 512
+):
     """
     Expects embeddings_dir to contain *.json files of the form:
         {"id": "...", "sensor": "optical", "embedding": [...], "lat": .., "lon": ..}
@@ -29,9 +31,7 @@ def build_index(embeddings_dir: str, index_path: str, metadata_path: str, dim: i
     index = faiss.IndexFlatIP(dim)
     metadata = {}
 
-    files = sorted(
-        f for f in os.listdir(embeddings_dir) if f.endswith(".json")
-    )
+    files = sorted(f for f in os.listdir(embeddings_dir) if f.endswith(".json"))
 
     vectors = []
     for i, fname in enumerate(files):

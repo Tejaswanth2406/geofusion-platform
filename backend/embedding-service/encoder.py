@@ -18,6 +18,7 @@ from PIL import Image
 # Try to import timm (ViT support)
 try:
     import timm
+
     TIMM_AVAILABLE = True
 except ImportError:
     TIMM_AVAILABLE = False
@@ -47,6 +48,7 @@ class ResNetEncoder(nn.Module):
     def __init__(self, embedding_dim: int = 512, pretrained: bool = True):
         super().__init__()
         import torchvision.models as models
+
         backbone = models.resnet50(
             weights=models.ResNet50_Weights.DEFAULT if pretrained else None
         )
@@ -79,27 +81,37 @@ class ViTEncoder(nn.Module):
 
 # ─── Sensor-Specific Preprocessing ───────────────────────────────────────────
 SENSOR_TRANSFORMS = {
-    "optical": T.Compose([
-        T.Resize((224, 224)),
-        T.ToTensor(),
-        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # ImageNet
-    ]),
-    "sar": T.Compose([
-        T.Resize((224, 224)),
-        T.Grayscale(num_output_channels=3),
-        T.ToTensor(),
-        T.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-    ]),
-    "multispectral": T.Compose([
-        T.Resize((224, 224)),
-        T.ToTensor(),
-        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ]),
-    "landsat": T.Compose([
-        T.Resize((224, 224)),
-        T.ToTensor(),
-        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ]),
+    "optical": T.Compose(
+        [
+            T.Resize((224, 224)),
+            T.ToTensor(),
+            T.Normalize(
+                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+            ),  # ImageNet
+        ]
+    ),
+    "sar": T.Compose(
+        [
+            T.Resize((224, 224)),
+            T.Grayscale(num_output_channels=3),
+            T.ToTensor(),
+            T.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+        ]
+    ),
+    "multispectral": T.Compose(
+        [
+            T.Resize((224, 224)),
+            T.ToTensor(),
+            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    ),
+    "landsat": T.Compose(
+        [
+            T.Resize((224, 224)),
+            T.ToTensor(),
+            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    ),
 }
 
 

@@ -15,13 +15,12 @@ from typing import List, Optional
 
 import structlog
 import torch
+from encoder import SatelliteEncoder
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from PIL import Image
 from prometheus_client import Counter, Histogram, generate_latest
 from pydantic import BaseModel
 from starlette.responses import Response
-
-from encoder import SatelliteEncoder
 
 # ─── Structured Logging ───────────────────────────────────────────────────────
 structlog.configure(
@@ -112,7 +111,9 @@ async def embed_image(
 ):
     """Encode a satellite image into a 512-D embedding vector."""
     request_id = str(uuid.uuid4())
-    log.info("embed.start", request_id=request_id, sensor=sensor, filename=image.filename)
+    log.info(
+        "embed.start", request_id=request_id, sensor=sensor, filename=image.filename
+    )
 
     try:
         raw = await image.read()

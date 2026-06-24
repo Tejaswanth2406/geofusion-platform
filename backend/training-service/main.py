@@ -24,7 +24,7 @@ from dataset import PairedSatelliteDataset
 from losses import MultiModalContrastiveLoss
 
 try:
-    from encoder import SatelliteEncoder, SENSOR_TRANSFORMS
+    from encoder import SENSOR_TRANSFORMS, SatelliteEncoder
 except ImportError:
     SatelliteEncoder = None
     SENSOR_TRANSFORMS = {}
@@ -42,18 +42,25 @@ def parse_args():
     parser.add_argument("--model", type=str, default="vit", choices=["vit", "resnet50"])
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--temperature", type=float, default=0.07)
-    parser.add_argument("--checkpoint_dir", type=str, default="../../ai-models/checkpoints")
+    parser.add_argument(
+        "--checkpoint_dir", type=str, default="../../ai-models/checkpoints"
+    )
     parser.add_argument("--mlflow_uri", type=str, default="http://localhost:5000")
-    parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
+    parser.add_argument(
+        "--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu"
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    logger.info(f"Starting GeoFusion training | model={args.model} device={args.device}")
+    logger.info(
+        f"Starting GeoFusion training | model={args.model} device={args.device}"
+    )
 
     try:
         import mlflow
+
         mlflow.set_tracking_uri(args.mlflow_uri)
         mlflow.set_experiment("geofusion-contrastive-training")
         mlflow_active = True
@@ -62,7 +69,9 @@ def main():
         mlflow_active = False
 
     if SatelliteEncoder is None:
-        logger.error("Could not import SatelliteEncoder. Ensure embedding-service is on PYTHONPATH.")
+        logger.error(
+            "Could not import SatelliteEncoder. Ensure embedding-service is on PYTHONPATH."
+        )
         return
 
     optical_encoder = SatelliteEncoder(
@@ -90,7 +99,9 @@ def main():
     )
 
     criterion = MultiModalContrastiveLoss(temperature=args.temperature)
-    params = list(optical_encoder.model.parameters()) + list(sar_encoder.model.parameters())
+    params = list(optical_encoder.model.parameters()) + list(
+        sar_encoder.model.parameters()
+    )
     optimizer = torch.optim.AdamW(params, lr=args.lr)
 
     os.makedirs(args.checkpoint_dir, exist_ok=True)
@@ -129,7 +140,9 @@ def main():
 
             avg_loss = epoch_loss / max(len(dataloader), 1)
             elapsed = time.perf_counter() - t0
-            logger.info(f"Epoch {epoch+1}/{args.epochs} | loss={avg_loss:.4f} | {elapsed:.1f}s")
+            logger.info(
+                f"Epoch {epoch+1}/{args.epochs} | loss={avg_loss:.4f} | {elapsed:.1f}s"
+            )
 
             if mlflow_active:
                 mlflow.log_metric("train_loss", avg_loss, step=epoch)

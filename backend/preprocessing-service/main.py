@@ -13,8 +13,6 @@ import numpy as np
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from loguru import logger
 from PIL import Image
-from pydantic import BaseModel
-
 from pipeline import (
     cloud_mask,
     extract_metadata,
@@ -23,6 +21,7 @@ from pipeline import (
     register_dataset_entry,
     tile_image,
 )
+from pydantic import BaseModel
 
 app = FastAPI(title="GeoFusion Preprocessing Service", version="1.0.0")
 
@@ -74,9 +73,11 @@ async def process_image(
             REGISTRY_PATH,
             tile_id=tile_id,
             sensor=sensor,
-            metadata={**metadata, "num_tiles": len(tiles), "cloud_coverage_pct": round(
-                100 * (1 - mask.mean()), 2
-            )},
+            metadata={
+                **metadata,
+                "num_tiles": len(tiles),
+                "cloud_coverage_pct": round(100 * (1 - mask.mean()), 2),
+            },
         )
 
         return TileResponse(
@@ -105,4 +106,5 @@ async def get_registry():
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="0.0.0.0", port=8004, reload=True)

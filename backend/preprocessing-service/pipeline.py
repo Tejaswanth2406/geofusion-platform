@@ -15,6 +15,7 @@ from PIL import Image
 
 try:
     import rasterio
+
     RASTERIO_AVAILABLE = True
 except ImportError:
     RASTERIO_AVAILABLE = False

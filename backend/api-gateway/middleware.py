@@ -43,6 +43,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         token = request.headers.get("Authorization", "")
         if not token.startswith("Bearer "):
             from starlette.responses import JSONResponse
+
             return JSONResponse(
                 {"detail": "Missing or invalid Authorization header"},
                 status_code=401,

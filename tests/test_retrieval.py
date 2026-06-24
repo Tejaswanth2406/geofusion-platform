@@ -103,9 +103,9 @@ class TestRetrieverSearch:
         rt, embeddings, _ = populated_retriever
         results = rt.search(query_embedding=embeddings[0].tolist(), top_k=5)
         for r in results:
-            assert 0.0 <= r["similarity"] <= 1.0 + 1e-6, (
-                f"Similarity {r['similarity']} out of range"
-            )
+            assert (
+                0.0 <= r["similarity"] <= 1.0 + 1e-6
+            ), f"Similarity {r['similarity']} out of range"
 
     def test_results_sorted_by_similarity(self, populated_retriever):
         rt, embeddings, _ = populated_retriever
