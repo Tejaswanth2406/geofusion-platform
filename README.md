@@ -1,3 +1,5 @@
+<img width="1672" height="941" alt="image" src="https://github.com/user-attachments/assets/7c92d768-4d1e-4d26-9084-d74ec3f73b99" />
+
 # GeoFusion AI Platform
 ### Multi-Sensor Satellite Intelligence Retrieval Engine
 **BAH 2026 · Hack2Skill Entry**
