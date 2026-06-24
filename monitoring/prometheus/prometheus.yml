@@ -1,0 +1,36 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: "geofusion-monitor"
+
+scrape_configs:
+  - job_name: "api-gateway"
+    static_configs:
+      - targets: ["api-gateway:8000"]
+    metrics_path: "/metrics"
+
+  - job_name: "embedding-service"
+    static_configs:
+      - targets: ["embedding-service:8001"]
+    metrics_path: "/metrics"
+
+  - job_name: "retrieval-service"
+    static_configs:
+      - targets: ["retrieval-service:8002"]
+    metrics_path: "/metrics"
+
+  - job_name: "preprocessing-service"
+    static_configs:
+      - targets: ["preprocessing-service:8004"]
+    metrics_path: "/metrics"
+
+  - job_name: "evaluation-service"
+    static_configs:
+      - targets: ["evaluation-service:8005"]
+    metrics_path: "/metrics"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []

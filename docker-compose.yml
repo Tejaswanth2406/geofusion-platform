@@ -1,8 +1,21 @@
 version: "3.9"
 
+# ─── Networks ────────────────────────────────────────────────────────────────
+networks:
+  geofusion-net:
+    driver: bridge
+
+# ─── Volumes ─────────────────────────────────────────────────────────────────
+volumes:
+  faiss-data:
+  mlflow-data:
+  prometheus-data:
+  grafana-data:
+
+# ─── Services ────────────────────────────────────────────────────────────────
 services:
 
-  # ── API Gateway ─────────────────────────────────────────────────────────────
+  # ── API Gateway (Port 8000) ──────────────────────────────────────────────
   api-gateway:
     build:
       context: .
@@ -13,15 +26,22 @@ services:
       - EMBEDDING_SERVICE_URL=http://embedding-service:8001
       - RETRIEVAL_SERVICE_URL=http://retrieval-service:8002
       - EVAL_SERVICE_URL=http://evaluation-service:8005
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-changeme_use_256bit_in_prod}
+      - JWT_EXPIRE_MINUTES=${JWT_EXPIRE_MINUTES:-60}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
     depends_on:
       - embedding-service
       - retrieval-service
-    volumes:
-      - ./data:/app/data
     networks:
       - geofusion-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # ── Embedding Service ────────────────────────────────────────────────────────
+  # ── Embedding Service (Port 8001) ────────────────────────────────────────
   embedding-service:
     build:
       context: .
@@ -29,106 +49,111 @@ services:
     ports:
       - "8001:8001"
     environment:
-      - MODEL_TYPE=vit
-      - EMBEDDING_DIM=512
-      - CHECKPOINT_PATH=/app/ai-models/checkpoints/best_model.pt
-    volumes:
-      - ./ai-models:/app/ai-models
-      - ./data:/app/data
+      - MODEL_TYPE=${MODEL_TYPE:-vit}
+      - EMBEDDING_DIM=${EMBEDDING_DIM:-512}
+      - CHECKPOINT_PATH=${CHECKPOINT_PATH:-}
     networks:
       - geofusion-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # ── Retrieval Service ────────────────────────────────────────────────────────
+  # ── Retrieval Service (Port 8002) ────────────────────────────────────────
   retrieval-service:
     build:
       context: .
       dockerfile: deployment/docker/Dockerfile.api
-    working_dir: /app/backend/retrieval-service
     command: uvicorn main:app --host 0.0.0.0 --port 8002
+    working_dir: /app/backend/retrieval-service
     ports:
       - "8002:8002"
     environment:
-      - FAISS_INDEX_PATH=/app/vector-database/faiss.index
-      - METADATA_DB_PATH=/app/vector-database/metadata.json
+      - FAISS_INDEX_PATH=/data/faiss.index
+      - METADATA_DB_PATH=/data/metadata.json
+      - EMBEDDING_DIM=${EMBEDDING_DIM:-512}
     volumes:
-      - ./vector-database:/app/vector-database
+      - faiss-data:/data
     networks:
       - geofusion-net
+    restart: unless-stopped
 
-  # ── Preprocessing Service ────────────────────────────────────────────────────
+  # ── Preprocessing Service (Port 8004) ────────────────────────────────────
   preprocessing-service:
     build:
       context: .
       dockerfile: deployment/docker/Dockerfile.api
-    working_dir: /app/backend/preprocessing-service
     command: uvicorn main:app --host 0.0.0.0 --port 8004
+    working_dir: /app/backend/preprocessing-service
     ports:
       - "8004:8004"
-    volumes:
-      - ./data:/app/data
     networks:
       - geofusion-net
+    restart: unless-stopped
 
-  # ── Evaluation Service ───────────────────────────────────────────────────────
+  # ── Evaluation Service (Port 8005) ───────────────────────────────────────
   evaluation-service:
     build:
       context: .
       dockerfile: deployment/docker/Dockerfile.api
-    working_dir: /app/backend/evaluation-service
     command: uvicorn main:app --host 0.0.0.0 --port 8005
+    working_dir: /app/backend/evaluation-service
     ports:
       - "8005:8005"
-    volumes:
-      - ./data:/app/data
-      - ./vector-database:/app/vector-database
     networks:
       - geofusion-net
+    restart: unless-stopped
 
-  # ── MinIO Object Storage ─────────────────────────────────────────────────────
-  minio:
-    image: minio/minio:latest
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    environment:
-      MINIO_ROOT_USER: geofusion
-      MINIO_ROOT_PASSWORD: geofusion123
-    command: server /data --console-address ":9001"
-    volumes:
-      - minio-data:/data
-    networks:
-      - geofusion-net
-
-  # ── MLflow Tracking Server ────────────────────────────────────────────────────
+  # ── MLflow Tracking Server (Port 5000) ───────────────────────────────────
   mlflow:
-    image: python:3.11-slim
+    image: ghcr.io/mlflow/mlflow:v2.11.3
+    command: >
+      mlflow server
+        --host 0.0.0.0
+        --port 5000
+        --backend-store-uri sqlite:///mlflow.db
+        --default-artifact-root /mlruns
     ports:
       - "5000:5000"
-    command: >
-      bash -c "pip install mlflow && mlflow server
-      --host 0.0.0.0
-      --port 5000
-      --backend-store-uri sqlite:///mlflow.db
-      --default-artifact-root /mlflow/artifacts"
     volumes:
-      - mlflow-data:/mlflow
+      - mlflow-data:/mlruns
     networks:
       - geofusion-net
+    restart: unless-stopped
 
-  # ── Prometheus Monitoring ─────────────────────────────────────────────────────
+  # ── Prometheus (Port 9090) ───────────────────────────────────────────────
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.51.2
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
     ports:
       - "9090:9090"
     volumes:
-      - ./deployment/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
     networks:
       - geofusion-net
+    restart: unless-stopped
 
-volumes:
-  minio-data:
-  mlflow-data:
-
-networks:
-  geofusion-net:
-    driver: bridge
+  # ── Grafana (Port 3001) ──────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-geofusion_grafana}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - geofusion-net
+    restart: unless-stopped

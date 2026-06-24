@@ -1,0 +1,21 @@
+[flake8]
+max-line-length = 88
+extend-ignore =
+    E203,  # Whitespace before ':' (conflicts with black)
+    E501,  # Line too long (handled by black)
+    W503,  # Line break before binary operator
+    W504,  # Line break after binary operator
+per-file-ignores =
+    tests/*: S101, S105
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    .eggs,
+    *.egg,
+    build,
+    dist,
+    mlruns,
+    data,
+    frontend,
+max-complexity = 10
