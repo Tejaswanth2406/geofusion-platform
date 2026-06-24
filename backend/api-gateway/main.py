@@ -37,10 +37,33 @@ from middleware import RequestLoggingMiddleware
 from prometheus_client import Counter, Histogram, generate_latest
 from pydantic import BaseModel
 from routes import router
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
 from starlette.responses import Response
+
+# ─── Optional rate-limiting (slowapi) ────────────────────────────────────────
+try:
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.errors import RateLimitExceeded
+    from slowapi.util import get_remote_address
+    _SLOWAPI_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    _SLOWAPI_AVAILABLE = False
+
+    def get_remote_address(request):  # type: ignore[misc]
+        return "127.0.0.1"
+
+    class _NoopLimiter:  # type: ignore[misc]
+        """Drop-in stub used when slowapi is not installed."""
+        def __init__(self, **kwargs):
+            pass
+        def limit(self, *args, **kwargs):
+            """Return a pass-through decorator."""
+            def decorator(func):
+                return func
+            return decorator
+
+    Limiter = _NoopLimiter  # type: ignore[misc,assignment]
+    RateLimitExceeded = Exception  # type: ignore[misc,assignment]
+    _rate_limit_exceeded_handler = None  # type: ignore[assignment]
 
 # ─── Structured Logging ───────────────────────────────────────────────────────
 structlog.configure(
@@ -62,16 +85,22 @@ log = structlog.get_logger("api-gateway")
 limiter = Limiter(key_func=get_remote_address)
 
 # ─── Prometheus Metrics ───────────────────────────────────────────────────────
-REQUEST_COUNT = Counter(
-    "geofusion_requests_total",
-    "Total API requests",
-    ["method", "endpoint", "status"],
-)
-LATENCY = Histogram(
-    "geofusion_request_latency_seconds",
-    "Request latency in seconds",
-    ["endpoint"],
-)
+try:
+    REQUEST_COUNT = Counter(
+        "geofusion_requests_total",
+        "Total API requests",
+        ["method", "endpoint", "status"],
+    )
+    LATENCY = Histogram(
+        "geofusion_request_latency_seconds",
+        "Request latency in seconds",
+        ["endpoint"],
+    )
+except ValueError:
+    # Metrics already registered (e.g. module reloaded during tests)
+    from prometheus_client import REGISTRY
+    REQUEST_COUNT = REGISTRY._names_to_collectors.get("geofusion_requests_total")
+    LATENCY = REGISTRY._names_to_collectors.get("geofusion_request_latency_seconds")
 
 # ─── Service URLs ─────────────────────────────────────────────────────────────
 EMBEDDING_URL = os.getenv("EMBEDDING_SERVICE_URL", "http://localhost:8001")
@@ -122,7 +151,8 @@ app = FastAPI(
 
 # ─── Middleware Stack ──────────────────────────────────────────────────────────
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+if _SLOWAPI_AVAILABLE and _rate_limit_exceeded_handler is not None:
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(
@@ -196,19 +226,23 @@ async def me(current_user: UserInfo = Depends(get_current_user)):
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 async def health_check():
     """Platform health check — verifies all downstream services. No auth required."""
-    client = app.state.http_client
     services = {}
 
-    for name, url in [
-        ("embedding", EMBEDDING_URL),
-        ("retrieval", RETRIEVAL_URL),
-        ("evaluation", EVAL_URL),
-    ]:
-        try:
-            r = await client.get(f"{url}/health", timeout=5.0)
-            services[name] = "up" if r.status_code == 200 else "degraded"
-        except Exception:
-            services[name] = "down"
+    try:
+        client = app.state.http_client
+        for name, url in [
+            ("embedding", EMBEDDING_URL),
+            ("retrieval", RETRIEVAL_URL),
+            ("evaluation", EVAL_URL),
+        ]:
+            try:
+                r = await client.get(f"{url}/health", timeout=5.0)
+                services[name] = "up" if r.status_code == 200 else "degraded"
+            except Exception:
+                services[name] = "down"
+    except AttributeError:
+        # http_client not yet initialised (e.g. during unit tests without lifespan)
+        services = {"embedding": "unknown", "retrieval": "unknown", "evaluation": "unknown"}
 
     overall = "healthy" if all(s == "up" for s in services.values()) else "degraded"
     log.info("health.check", status=overall, services=services)

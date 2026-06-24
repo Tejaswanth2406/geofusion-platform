@@ -27,17 +27,55 @@ def client():
     os.environ.setdefault("EVAL_SERVICE_URL", "http://localhost:8005")
     os.environ.setdefault("JWT_SECRET_KEY", "test_secret_key_for_testing_only")
 
-    # Force api-gateway path to front to prevent shadowing by retrieval-service
     gateway_path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "..", "backend", "api-gateway")
     )
-    sys.path.insert(0, gateway_path)
-    if "main" in sys.modules:
-        del sys.modules["main"]
+    # Ensure the gateway path is first in sys.path so its modules take precedence
+    if gateway_path not in sys.path:
+        sys.path.insert(0, gateway_path)
+    else:
+        sys.path.remove(gateway_path)
+        sys.path.insert(0, gateway_path)
 
-    from main import app  # noqa: E402
+    import importlib.util
 
-    return TestClient(app, raise_server_exceptions=False)
+    # Remove any cached gateway sub-modules that could have been loaded from
+    # another service's path (e.g. auth, middleware, routes) before we exec.
+    for mod_name in ("auth", "middleware", "routes", "main"):
+        sys.modules.pop(mod_name, None)
+
+    spec = importlib.util.spec_from_file_location(
+        "api_gateway_main", os.path.join(gateway_path, "main.py")
+    )
+    api_gateway_main = importlib.util.module_from_spec(spec)
+    sys.modules["api_gateway_main"] = api_gateway_main
+
+    # Register the gateway sub-modules under their bare names so that
+    # relative imports inside main.py (from auth import …) resolve correctly.
+    old_modules = {}
+    for mod_name in ("auth", "middleware", "routes"):
+        old_modules[mod_name] = sys.modules.get(mod_name)
+        sub_spec = importlib.util.spec_from_file_location(
+            mod_name, os.path.join(gateway_path, f"{mod_name}.py")
+        )
+        sub_mod = importlib.util.module_from_spec(sub_spec)
+        sys.modules[mod_name] = sub_mod
+        sub_spec.loader.exec_module(sub_mod)
+
+    old_main = sys.modules.get("main")
+    sys.modules["main"] = api_gateway_main
+    try:
+        spec.loader.exec_module(api_gateway_main)
+    finally:
+        if old_main is not None:
+            sys.modules["main"] = old_main
+        else:
+            sys.modules.pop("main", None)
+
+    # Use TestClient as a context manager so the lifespan runs and
+    # app.state.http_client gets initialised before tests hit /health.
+    with TestClient(api_gateway_main.app, raise_server_exceptions=False) as c:
+        yield c
 
 
 # ─── Health Endpoint ──────────────────────────────────────────────────────────

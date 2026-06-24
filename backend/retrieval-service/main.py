@@ -33,16 +33,22 @@ INDEX_PATH = os.getenv("FAISS_INDEX_PATH", "../../vector-database/faiss.index")
 METADATA_PATH = os.getenv("METADATA_DB_PATH", "../../vector-database/metadata.json")
 EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM", "512"))
 
-# ─── Prometheus Metrics ───────────────────────────────────────────────────────
-SEARCH_COUNT = Counter(
-    "geofusion_search_total", "Total search requests", ["sensor", "mode"]
-)
-SEARCH_LATENCY = Histogram(
-    "geofusion_search_latency_seconds",
-    "FAISS search latency",
-    ["mode"],
-    buckets=[0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5],
-)
+# ─── Prometheus Metrics ─────────────────────────────────────────────────
+try:
+    SEARCH_COUNT = Counter(
+        "geofusion_search_total", "Total search requests", ["sensor", "mode"]
+    )
+    SEARCH_LATENCY = Histogram(
+        "geofusion_search_latency_seconds",
+        "FAISS search latency",
+        ["mode"],
+        buckets=[0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5],
+    )
+except ValueError:
+    # Metrics already registered (e.g. module reloaded during tests)
+    from prometheus_client import REGISTRY
+    SEARCH_COUNT = REGISTRY._names_to_collectors.get("geofusion_search_total")
+    SEARCH_LATENCY = REGISTRY._names_to_collectors.get("geofusion_search_latency_seconds")
 
 retriever: Optional[GeoFusionRetriever] = None
 
