@@ -33,7 +33,6 @@ from auth import (
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
 from middleware import RequestLoggingMiddleware
 from prometheus_client import Counter, Histogram, generate_latest
 from pydantic import BaseModel

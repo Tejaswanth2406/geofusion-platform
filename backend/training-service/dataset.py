@@ -7,7 +7,6 @@ Expects a pairs.json manifest mapping geography IDs to file paths.
 
 import json
 import os
-from typing import Optional
 
 from PIL import Image
 from torch.utils.data import Dataset

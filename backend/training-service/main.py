@@ -20,8 +20,8 @@ from torch.utils.data import DataLoader
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "embedding-service"))
 
-from dataset import PairedSatelliteDataset
-from losses import MultiModalContrastiveLoss
+from dataset import PairedSatelliteDataset  # noqa: E402
+from losses import MultiModalContrastiveLoss  # noqa: E402
 
 try:
     from encoder import SENSOR_TRANSFORMS, SatelliteEncoder
