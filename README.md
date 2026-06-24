@@ -1,4 +1,4 @@
-<img width="1672" height="941" alt="image" src="https://github.com/user-attachments/assets/7c92d768-4d1e-4d26-9084-d74ec3f73b99" />
+<img width="1942" height="809" alt="image" src="https://github.com/user-attachments/assets/c99dfe42-dff7-42ee-a858-ef960024ea00" />
 
 # GeoFusion AI Platform
 ### Multi-Sensor Satellite Intelligence Retrieval Engine
