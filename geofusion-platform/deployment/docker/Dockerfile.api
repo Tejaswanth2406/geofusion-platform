@@ -1,0 +1,25 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# System dependencies for rasterio / geopandas / opencv
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libgdal-dev \
+    libgl1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY backend/ ./backend
+COPY ai-models/ ./ai-models
+COPY vector-database/ ./vector-database
+
+# Default service is api-gateway; other services override
+# `working_dir` + `command` in docker-compose.yml
+WORKDIR /app/backend/api-gateway
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

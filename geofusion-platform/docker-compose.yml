@@ -1,0 +1,134 @@
+version: "3.9"
+
+services:
+
+  # ── API Gateway ─────────────────────────────────────────────────────────────
+  api-gateway:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - EMBEDDING_SERVICE_URL=http://embedding-service:8001
+      - RETRIEVAL_SERVICE_URL=http://retrieval-service:8002
+      - EVAL_SERVICE_URL=http://evaluation-service:8005
+    depends_on:
+      - embedding-service
+      - retrieval-service
+    volumes:
+      - ./data:/app/data
+    networks:
+      - geofusion-net
+
+  # ── Embedding Service ────────────────────────────────────────────────────────
+  embedding-service:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.embedding
+    ports:
+      - "8001:8001"
+    environment:
+      - MODEL_TYPE=vit
+      - EMBEDDING_DIM=512
+      - CHECKPOINT_PATH=/app/ai-models/checkpoints/best_model.pt
+    volumes:
+      - ./ai-models:/app/ai-models
+      - ./data:/app/data
+    networks:
+      - geofusion-net
+
+  # ── Retrieval Service ────────────────────────────────────────────────────────
+  retrieval-service:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.api
+    working_dir: /app/backend/retrieval-service
+    command: uvicorn main:app --host 0.0.0.0 --port 8002
+    ports:
+      - "8002:8002"
+    environment:
+      - FAISS_INDEX_PATH=/app/vector-database/faiss.index
+      - METADATA_DB_PATH=/app/vector-database/metadata.json
+    volumes:
+      - ./vector-database:/app/vector-database
+    networks:
+      - geofusion-net
+
+  # ── Preprocessing Service ────────────────────────────────────────────────────
+  preprocessing-service:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.api
+    working_dir: /app/backend/preprocessing-service
+    command: uvicorn main:app --host 0.0.0.0 --port 8004
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./data:/app/data
+    networks:
+      - geofusion-net
+
+  # ── Evaluation Service ───────────────────────────────────────────────────────
+  evaluation-service:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.api
+    working_dir: /app/backend/evaluation-service
+    command: uvicorn main:app --host 0.0.0.0 --port 8005
+    ports:
+      - "8005:8005"
+    volumes:
+      - ./data:/app/data
+      - ./vector-database:/app/vector-database
+    networks:
+      - geofusion-net
+
+  # ── MinIO Object Storage ─────────────────────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: geofusion
+      MINIO_ROOT_PASSWORD: geofusion123
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - geofusion-net
+
+  # ── MLflow Tracking Server ────────────────────────────────────────────────────
+  mlflow:
+    image: python:3.11-slim
+    ports:
+      - "5000:5000"
+    command: >
+      bash -c "pip install mlflow && mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow.db
+      --default-artifact-root /mlflow/artifacts"
+    volumes:
+      - mlflow-data:/mlflow
+    networks:
+      - geofusion-net
+
+  # ── Prometheus Monitoring ─────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deployment/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - geofusion-net
+
+volumes:
+  minio-data:
+  mlflow-data:
+
+networks:
+  geofusion-net:
+    driver: bridge

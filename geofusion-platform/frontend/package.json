@@ -1,0 +1,9 @@
+{
+  "name": "geofusion-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GeoFusion AI Platform — React dashboard (placeholder). See src/App.jsx.",
+  "scripts": {
+    "start": "echo 'Scaffold only — wire up Vite/CRA and run npm install && npm start'"
+  }
+}

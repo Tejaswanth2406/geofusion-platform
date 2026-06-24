@@ -1,0 +1,12 @@
+{
+  "tile_id": "tile001",
+  "sensor": "optical",
+  "satellite": "Sentinel-2",
+  "bands": 13,
+  "acquisition_date": "2026-03-12",
+  "location": {
+    "lat": 16.23,
+    "lon": 81.54
+  },
+  "cloud_coverage_pct": 4.2
+}

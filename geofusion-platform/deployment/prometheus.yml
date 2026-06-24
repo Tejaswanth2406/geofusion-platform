@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "geofusion-api-gateway"
+    static_configs:
+      - targets: ["api-gateway:8000"]
+
+  - job_name: "geofusion-embedding-service"
+    static_configs:
+      - targets: ["embedding-service:8001"]
+
+  - job_name: "geofusion-retrieval-service"
+    static_configs:
+      - targets: ["retrieval-service:8002"]

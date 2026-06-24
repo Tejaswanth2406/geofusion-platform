@@ -1,0 +1,11 @@
+{
+  "tile_id": "tile001",
+  "sensor": "sar",
+  "satellite": "Sentinel-1",
+  "polarization": ["VV", "VH"],
+  "acquisition_date": "2026-03-13",
+  "location": {
+    "lat": 16.23,
+    "lon": 81.54
+  }
+}

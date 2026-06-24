@@ -1,0 +1,9 @@
+[
+  {
+    "id": "tile001",
+    "optical": "sentinel2/tile001/image.tiff",
+    "sar": "sentinel1/tile001/sar.tiff",
+    "lat": 16.23,
+    "lon": 81.54
+  }
+]
