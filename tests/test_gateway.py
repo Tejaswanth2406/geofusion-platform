@@ -28,11 +28,13 @@ def client():
     os.environ.setdefault("JWT_SECRET_KEY", "test_secret_key_for_testing_only")
 
     # Force api-gateway path to front to prevent shadowing by retrieval-service
-    gateway_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend", "api-gateway"))
+    gateway_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "backend", "api-gateway")
+    )
     sys.path.insert(0, gateway_path)
     if "main" in sys.modules:
         del sys.modules["main"]
-        
+
     from main import app  # noqa: E402
 
     return TestClient(app, raise_server_exceptions=False)
