@@ -40,9 +40,12 @@ mlflow==2.13.0
 # ─── Monitoring ───────────────────────────────────────────────────────────────
 prometheus-client==0.20.0
 
-# ─── Utilities ────────────────────────────────────────────────────────────────
+# ─── Utilities & Security ───────────────────────────────────────────────────────
 tqdm==4.66.4
 loguru==0.7.2
+structlog==24.1.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
 python-dotenv==1.0.1
 pyyaml==6.0.1
 click==8.1.7
