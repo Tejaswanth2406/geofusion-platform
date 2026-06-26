@@ -62,8 +62,9 @@ graph TD
 - **JWT Authentication:** Secure endpoints with Role-Based Access Control (RBAC).
 - **CI/CD Pipeline:** Fully automated testing, linting (Black, Flake8), and Docker image building via GitHub Actions.
 - **Observability:** Centralized structured JSON logging (structlog) and Prometheus metrics.
-- **Data Versioning:** Integrates with DVC (Data Version Control) for satellite datasets.
+- **Data Versioning & Ingestion:** STAC API ingestion pipeline (Microsoft Planetary Computer) and DVC integration.
 - **Experiment Tracking:** MLflow integration for model registry and metrics tracking.
+- **Frontend Integration:** React frontend for querying the multi-modal satellite data.
 
 ---
 
@@ -99,6 +100,20 @@ curl -X POST http://localhost:8000/api/v1/retrieve \
   -F "image=@data/sentinel2/tile001/image.tiff"
 ```
 
+### 4. Data Ingestion (STAC API)
+To fetch satellite imagery via Microsoft Planetary Computer STAC API:
+```bash
+python data-engineering/ingestion/stac_ingest.py --bbox -122.5 37.7 -122.3 37.8 --sensor optical --max_items 5
+```
+
+---
+
+## 🌍 Production Deployment
+
+The project architecture separates the UI from the microservice backend:
+- **Frontend (React)**: Deployed automatically via **Vercel** for globally distributed edge serving and seamless CI/CD integration.
+- **Backend (FastAPI)**: Hosted on **Render** (via Docker containers) to support Python-heavy dependencies, FAISS in-memory indexing, and deep learning libraries.
+
 ---
 
 ## 📂 Repository Structure
@@ -112,6 +127,8 @@ geofusion-platform/
 │   ├── training-service/       # Contrastive Losses, Distributed Training
 │   ├── evaluation-service/     # F1@K, mAP metrics
 │   └── preprocessing-service/  # Cloud masking, tiling
+├── frontend/                   # React web application (Vercel deployment)
+├── data-engineering/           # STAC ingestion pipelines
 ├── tests/                      # Pytest unit & integration tests
 ├── deployment/docker/          # Container definitions
 ├── monitoring/                 # Prometheus config & Grafana dashboards
