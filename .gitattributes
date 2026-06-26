@@ -1,0 +1,26 @@
+# Force LF line endings for all text files (consistent across OS)
+* text=auto eol=lf
+
+# Ensure Python files are always LF
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.toml text eol=lf
+*.cfg text eol=lf
+*.jsx text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.conf text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.tif binary
+*.tiff binary
+*.pt binary
+*.index binary
