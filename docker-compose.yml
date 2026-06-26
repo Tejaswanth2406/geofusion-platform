@@ -15,6 +15,25 @@ volumes:
 # ─── Services ────────────────────────────────────────────────────────────────
 services:
 
+  # ── Frontend Dashboard (Port 3000) ──────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
+    networks:
+      - geofusion-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
   # ── API Gateway (Port 8000) ──────────────────────────────────────────────
   api-gateway:
     build:

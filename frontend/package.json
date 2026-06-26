@@ -1,9 +1,29 @@
 {
   "name": "geofusion-dashboard",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "GeoFusion AI Platform — React dashboard (placeholder). See src/App.jsx.",
+  "description": "GeoFusion AI Platform — Multi-Sensor Satellite Intelligence Retrieval Dashboard",
+  "type": "module",
   "scripts": {
-    "start": "echo 'Scaffold only — wire up Vite/CRA and run npm install && npm start'"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js,.jsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.395.0",
+    "recharts": "^2.12.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.2",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.7",
+    "vite": "^5.3.1"
   }
 }

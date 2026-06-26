@@ -1,1 +1,117 @@
-{}
+{
+  "tiles": [
+    {
+      "tile_id": "S2_T001_2024-03-15",
+      "sensor": "optical",
+      "location": "Nile Delta, Egypt",
+      "date": "2024-03-15",
+      "cloud_cover": 2,
+      "bbox": [30.5, 30.8, 31.2, 31.5],
+      "resolution_m": 10,
+      "bands": 13,
+      "embedding_dim": 512
+    },
+    {
+      "tile_id": "S1_T002_2024-03-16",
+      "sensor": "sar",
+      "location": "Amazon Basin, Brazil",
+      "date": "2024-03-16",
+      "cloud_cover": 0,
+      "bbox": [-60.5, -5.2, -59.8, -4.5],
+      "resolution_m": 10,
+      "bands": 2,
+      "polarization": "VV/VH",
+      "embedding_dim": 512
+    },
+    {
+      "tile_id": "L8_T003_2024-03-10",
+      "sensor": "multispectral",
+      "location": "Central Valley, California, USA",
+      "date": "2024-03-10",
+      "cloud_cover": 5,
+      "bbox": [-120.5, 36.2, -119.8, 36.9],
+      "resolution_m": 30,
+      "bands": 11,
+      "embedding_dim": 512
+    },
+    {
+      "tile_id": "S2_T004_2024-02-28",
+      "sensor": "optical",
+      "location": "Rhine River Valley, Germany",
+      "date": "2024-02-28",
+      "cloud_cover": 15,
+      "bbox": [7.8, 50.2, 8.5, 50.9],
+      "resolution_m": 10,
+      "bands": 13,
+      "embedding_dim": 512
+    },
+    {
+      "tile_id": "S1_T005_2024-03-01",
+      "sensor": "sar",
+      "location": "Mekong Delta, Vietnam",
+      "date": "2024-03-01",
+      "cloud_cover": 0,
+      "bbox": [105.5, 9.8, 106.2, 10.5],
+      "resolution_m": 10,
+      "bands": 2,
+      "polarization": "VV/VH",
+      "embedding_dim": 512
+    },
+    {
+      "tile_id": "S2_T006_2024-03-20",
+      "sensor": "optical",
+      "location": "Sahara Desert, Algeria",
+      "date": "2024-03-20",
+      "cloud_cover": 0,
+      "bbox": [3.5, 28.2, 4.2, 28.9],
+      "resolution_m": 10,
+      "bands": 13,
+      "embedding_dim": 512
+    },
+    {
+      "tile_id": "L8_T007_2024-03-05",
+      "sensor": "multispectral",
+      "location": "Ganges Plain, India",
+      "date": "2024-03-05",
+      "cloud_cover": 8,
+      "bbox": [80.2, 26.5, 80.9, 27.2],
+      "resolution_m": 30,
+      "bands": 11,
+      "embedding_dim": 512
+    },
+    {
+      "tile_id": "S1_T008_2024-03-12",
+      "sensor": "sar",
+      "location": "North Sea, Netherlands",
+      "date": "2024-03-12",
+      "cloud_cover": 0,
+      "bbox": [4.2, 52.5, 4.9, 53.2],
+      "resolution_m": 10,
+      "bands": 2,
+      "polarization": "VV/VH",
+      "embedding_dim": 512
+    },
+    {
+      "tile_id": "S2_T009_2024-03-18",
+      "sensor": "optical",
+      "location": "Tibetan Plateau, China",
+      "date": "2024-03-18",
+      "cloud_cover": 3,
+      "bbox": [91.5, 31.2, 92.2, 31.9],
+      "resolution_m": 10,
+      "bands": 13,
+      "embedding_dim": 512
+    },
+    {
+      "tile_id": "L8_T010_2024-03-22",
+      "sensor": "multispectral",
+      "location": "Murray-Darling Basin, Australia",
+      "date": "2024-03-22",
+      "cloud_cover": 12,
+      "bbox": [143.5, -35.2, 144.2, -34.5],
+      "resolution_m": 30,
+      "bands": 11,
+      "embedding_dim": 512
+    }
+  ]
+}

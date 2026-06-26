@@ -15,4 +15,13 @@ vector-database/*.index
 
 mlflow.db
 mlruns/
+
+# Frontend
 node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Test coverage
+htmlcov/
+.coverage
+coverage.xml
