@@ -9,9 +9,9 @@ import sys
 import pytest
 from fastapi.testclient import TestClient
 
-gateway_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "backend", "api-gateway")
-)
+p_dir = os.path.dirname(__file__)
+gw_path = os.path.join(p_dir, "..", "backend", "api-gateway")
+gateway_path = os.path.abspath(gw_path)
 
 
 @pytest.fixture(scope="module")

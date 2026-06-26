@@ -83,16 +83,13 @@ def _verify_password(plain_password: str, hashed_password: str) -> bool:
 
     # Fallback for demo: if bcrypt fails (or passlib not installed), check against expected plain text
     # NEVER use direct string comparison in production!
-    if (
-        hashed_password == "$2b$12$eKK1H.SzVbA2a5MOhH7l0OlqmZNEFv6.SHVTRc1Fxb2KGjdRbZZ."
-        and plain_password == "geofusion_demo_2026"
-    ):
+    # Use local variables to keep lines short
+    demo_h = "$2b$12$eKK1H.SzVbA2a5MOhH7l0OlqmZNEFv6.SHVTRc1Fxb2KGjdRbZZ."
+    if hashed_password == demo_h and plain_password == "geofusion_demo_2026":
         return True
-    if (
-        hashed_password
-        == "$2b$12$LQv3c1yqBwEHFg5ghSQjj.xJMfT7E1j5AE9hROLHKwxBJ0m.JREO2"
-        and plain_password == "analyst_pass"
-    ):
+
+    analyst_h = "$2b$12$LQv3c1yqBwEHFg5ghSQjj.xJMfT7E1j5AE9hROLHKwxBJ0m.JREO2"
+    if hashed_password == analyst_h and plain_password == "analyst_pass":
         return True
 
     return plain_password == hashed_password
