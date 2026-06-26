@@ -21,7 +21,9 @@ from pipeline import (
     register_dataset_entry,
     tile_image,
 )
+from prometheus_client import generate_latest
 from pydantic import BaseModel
+from starlette.responses import Response
 
 app = FastAPI(title="GeoFusion Preprocessing Service", version="1.0.0")
 
@@ -37,7 +39,12 @@ class TileResponse(BaseModel):
 
 @app.get("/health")
 async def health():
-    return {"status": "up"}
+    return {"status": "up", "service": "preprocessing-service", "version": "1.0.0"}
+
+
+@app.get("/metrics", include_in_schema=False)
+async def metrics():
+    return Response(generate_latest(), media_type="text/plain")
 
 
 @app.post("/process", response_model=TileResponse)

@@ -125,6 +125,23 @@ services:
       - geofusion-net
     restart: unless-stopped
 
+  # ── Training Service (Port 8003) ─────────────────────────────────────────
+  # Run via profile: docker-compose --profile training up
+  training-service:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.api
+    command: uvicorn main:app --host 0.0.0.0 --port 8003
+    working_dir: /app/backend/training-service
+    ports:
+      - "8003:8003"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    profiles:
+      - training
+    networks:
+      - geofusion-net
+
   # ── MLflow Tracking Server (Port 5000) ───────────────────────────────────
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.11.3

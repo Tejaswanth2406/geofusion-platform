@@ -9,7 +9,9 @@ from typing import List
 
 from evaluator import evaluate
 from fastapi import FastAPI, HTTPException
+from prometheus_client import generate_latest
 from pydantic import BaseModel
+from starlette.responses import Response
 
 app = FastAPI(title="GeoFusion Evaluation Service", version="1.0.0")
 
@@ -25,7 +27,12 @@ class EvalRequest(BaseModel):
 
 @app.get("/health")
 async def health():
-    return {"status": "up"}
+    return {"status": "up", "service": "evaluation-service", "version": "1.0.0"}
+
+
+@app.get("/metrics", include_in_schema=False)
+async def metrics():
+    return Response(generate_latest(), media_type="text/plain")
 
 
 @app.post("/evaluate")

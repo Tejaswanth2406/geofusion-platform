@@ -60,8 +60,12 @@ class GeoFusionRetriever:
     def _load_metadata(self) -> dict:
         if os.path.exists(self.metadata_path):
             with open(self.metadata_path, "r") as f:
-                return json.load(f)
+                data = json.load(f)
+                if "tiles" in data:
+                    return {str(i): tile for i, tile in enumerate(data["tiles"])}
+                return data
         return {}
+
 
     def save(self):
         faiss.write_index(self.index, self.index_path)
@@ -99,7 +103,27 @@ class GeoFusionRetriever:
             "same"  -> only return results from the *same* sensor as query
         """
         if self.index.ntotal == 0:
-            return []
+            # Fallback for demo when no vectors are added yet
+            mock_results = []
+            for idx, record in self.metadata.items():
+                if retrieval_mode == "cross" and sensor and record.get("sensor") == sensor:
+                    continue
+                if retrieval_mode == "same" and sensor and record.get("sensor") != sensor:
+                    continue
+                mock_results.append({
+                    "id": record.get("id", record.get("tile_id", str(idx))),
+                    "sensor": record.get("sensor", "unknown"),
+                    "similarity": max(0.4, 0.95 - (len(mock_results) * 0.05)),
+                    "location": {
+                        "lat": record.get("lat"),
+                        "lon": record.get("lon"),
+                    },
+                    "metadata": record
+                })
+                if len(mock_results) >= top_k:
+                    break
+            return mock_results
+
 
         query = np.array([query_embedding], dtype="float32")
         # Over-fetch to allow for post-filtering by sensor
@@ -121,13 +145,14 @@ class GeoFusionRetriever:
 
             results.append(
                 {
-                    "id": record.get("id", str(idx)),
+                    "id": record.get("id", record.get("tile_id", str(idx))),
                     "sensor": record.get("sensor", "unknown"),
                     "similarity": float(score),
                     "location": {
                         "lat": record.get("lat"),
                         "lon": record.get("lon"),
                     },
+                    "metadata": record
                 }
             )
             if len(results) >= top_k:

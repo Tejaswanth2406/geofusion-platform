@@ -40,12 +40,18 @@ CHECKPOINT = os.getenv("CHECKPOINT_PATH", "")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 # ─── Prometheus Metrics ───────────────────────────────────────────────────────
-EMBED_COUNT = Counter(
-    "geofusion_embed_total", "Total embedding requests", ["sensor", "status"]
-)
-EMBED_LATENCY = Histogram(
-    "geofusion_embed_latency_seconds", "Embedding inference latency", ["sensor"]
-)
+try:
+    EMBED_COUNT = Counter(
+        "geofusion_embed_total", "Total embedding requests", ["sensor", "status"]
+    )
+    EMBED_LATENCY = Histogram(
+        "geofusion_embed_latency_seconds", "Embedding inference latency", ["sensor"]
+    )
+except ValueError:
+    # Already registered (module reload in tests)
+    from prometheus_client import REGISTRY
+    EMBED_COUNT = REGISTRY._names_to_collectors.get("geofusion_embed_total")
+    EMBED_LATENCY = REGISTRY._names_to_collectors.get("geofusion_embed_latency_seconds")
 
 encoder: Optional[SatelliteEncoder] = None
 
@@ -110,6 +116,9 @@ async def embed_image(
     location_lon: float = Form(0.0),
 ):
     """Encode a satellite image into a 512-D embedding vector."""
+    if encoder is None:
+        raise HTTPException(status_code=503, detail="Encoder not initialised yet")
+
     request_id = str(uuid.uuid4())
     log.info(
         "embed.start", request_id=request_id, sensor=sensor, filename=image.filename
