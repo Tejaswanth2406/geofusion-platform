@@ -44,6 +44,7 @@ try:
     from slowapi import Limiter, _rate_limit_exceeded_handler
     from slowapi.errors import RateLimitExceeded
     from slowapi.util import get_remote_address
+
     _SLOWAPI_AVAILABLE = True
 except ImportError:  # pragma: no cover
     _SLOWAPI_AVAILABLE = False
@@ -53,12 +54,16 @@ except ImportError:  # pragma: no cover
 
     class _NoopLimiter:  # type: ignore[misc]
         """Drop-in stub used when slowapi is not installed."""
+
         def __init__(self, **kwargs):
             pass
+
         def limit(self, *args, **kwargs):
             """Return a pass-through decorator."""
+
             def decorator(func):
                 return func
+
             return decorator
 
     Limiter = _NoopLimiter  # type: ignore[misc,assignment]
@@ -98,6 +103,7 @@ try:
 except ValueError:
     # Metrics already registered (e.g. module reloaded during tests)
     from prometheus_client import REGISTRY
+
     REQUEST_COUNT = REGISTRY._names_to_collectors.get("geofusion_requests_total")
     LATENCY = REGISTRY._names_to_collectors.get("geofusion_request_latency_seconds")
 
@@ -241,7 +247,11 @@ async def health_check():
                 services[name] = "down"
     except AttributeError:
         # http_client not yet initialised (e.g. during unit tests without lifespan)
-        services = {"embedding": "unknown", "retrieval": "unknown", "evaluation": "unknown"}
+        services = {
+            "embedding": "unknown",
+            "retrieval": "unknown",
+            "evaluation": "unknown",
+        }
 
     overall = "healthy" if all(s == "up" for s in services.values()) else "degraded"
     log.info("health.check", status=overall, services=services)

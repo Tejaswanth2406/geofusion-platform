@@ -1,7 +1,7 @@
 """
 GeoFusion — STAC Data Ingestion Pipeline
 =========================================
-Downloads satellite imagery (Sentinel-2, Sentinel-1, Landsat) via the 
+Downloads satellite imagery (Sentinel-2, Sentinel-1, Landsat) via the
 SpatioTemporal Asset Catalog (STAC) API (e.g., Microsoft Planetary Computer).
 
 Usage:
@@ -12,13 +12,13 @@ import argparse
 import json
 import os
 import urllib.request
-from datetime import datetime
 
 from loguru import logger
 
 try:
-    import pystac_client
     import planetary_computer as pc
+    import pystac_client
+
     STAC_AVAILABLE = True
 except ImportError:
     STAC_AVAILABLE = False
@@ -28,17 +28,13 @@ def download_asset(url: str, dest_path: str):
     """Download a STAC asset to local disk."""
     if not os.path.exists(os.path.dirname(dest_path)):
         os.makedirs(os.path.dirname(dest_path))
-    
+
     logger.info(f"Downloading {url} -> {dest_path}")
     urllib.request.urlretrieve(url, dest_path)
 
 
 def ingest_stac_data(
-    bbox: list[float], 
-    sensor: str, 
-    date_range: str, 
-    max_items: int,
-    output_dir: str
+    bbox: list[float], sensor: str, date_range: str, max_items: int, output_dir: str
 ):
     if not STAC_AVAILABLE:
         logger.error("pystac-client and planetary-computer are required for ingestion.")
@@ -77,7 +73,7 @@ def ingest_stac_data(
     for i, item in enumerate(items):
         item_id = item.id
         logger.info(f"Processing item {i+1}/{len(items)}: {item_id}")
-        
+
         # Select best asset (visual for optical, vv for SAR)
         asset_key = "visual" if sensor == "optical" else "vv"
         if asset_key not in item.assets:
@@ -85,8 +81,8 @@ def ingest_stac_data(
             asset_key = list(item.assets.keys())[0]
 
         asset_url = item.assets[asset_key].href
-        dest_filename = os.path.join(output_dir, sensor, item_id, f"image.tif")
-        
+        dest_filename = os.path.join(output_dir, sensor, item_id, "image.tif")
+
         try:
             download_asset(asset_url, dest_filename)
         except Exception as e:
@@ -102,24 +98,34 @@ def ingest_stac_data(
             "cloud_cover": item.properties.get("eo:cloud_cover", 0.0),
             "stac_collection": item.collection_id,
         }
-        
+
         meta_path = os.path.join(output_dir, sensor, item_id, "metadata.json")
         with open(meta_path, "w") as f:
             json.dump(record, f, indent=2)
-            
+
         metadata_records.append(record)
-        
+
     logger.info(f"Ingestion complete. Downloaded {len(metadata_records)} tiles.")
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="GeoFusion STAC Ingestion")
-    parser.add_argument("--bbox", type=float, nargs=4, required=True, 
-                        help="Bounding box: min_lon min_lat max_lon max_lat")
-    parser.add_argument("--sensor", type=str, default="optical", 
-                        choices=["optical", "sar", "landsat"])
-    parser.add_argument("--dates", type=str, default="2023-01-01/2024-01-01", 
-                        help="STAC datetime range (e.g. 2023-01-01/2023-12-31)")
+    parser.add_argument(
+        "--bbox",
+        type=float,
+        nargs=4,
+        required=True,
+        help="Bounding box: min_lon min_lat max_lon max_lat",
+    )
+    parser.add_argument(
+        "--sensor", type=str, default="optical", choices=["optical", "sar", "landsat"]
+    )
+    parser.add_argument(
+        "--dates",
+        type=str,
+        default="2023-01-01/2024-01-01",
+        help="STAC datetime range (e.g. 2023-01-01/2023-12-31)",
+    )
     parser.add_argument("--max_items", type=int, default=10)
     parser.add_argument("--output_dir", type=str, default="../../data/")
     return parser.parse_args()
@@ -132,5 +138,5 @@ if __name__ == "__main__":
         sensor=args.sensor,
         date_range=args.dates,
         max_items=args.max_items,
-        output_dir=args.output_dir
+        output_dir=args.output_dir,
     )

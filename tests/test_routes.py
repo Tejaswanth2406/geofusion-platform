@@ -2,14 +2,16 @@
 Tests for the GeoFusion API Gateway Routes endpoints.
 """
 
+import importlib.util
 import os
 import sys
-import importlib.util
 
 import pytest
 from fastapi.testclient import TestClient
 
-gateway_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend", "api-gateway"))
+gateway_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "backend", "api-gateway")
+)
 
 
 @pytest.fixture(scope="module")

@@ -50,6 +50,7 @@ try:
 except ValueError:
     # Already registered (module reload in tests)
     from prometheus_client import REGISTRY
+
     EMBED_COUNT = REGISTRY._names_to_collectors.get("geofusion_embed_total")
     EMBED_LATENCY = REGISTRY._names_to_collectors.get("geofusion_embed_latency_seconds")
 

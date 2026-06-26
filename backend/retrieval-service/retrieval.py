@@ -66,7 +66,6 @@ class GeoFusionRetriever:
                 return data
         return {}
 
-
     def save(self):
         faiss.write_index(self.index, self.index_path)
         with open(self.metadata_path, "w") as f:
@@ -88,7 +87,7 @@ class GeoFusionRetriever:
             self.metadata[str(start_idx + offset)] = record
 
     # ── Search ────────────────────────────────────────────────────────────
-    def search(
+    def search(  # noqa: C901
         self,
         query_embedding: List[float],
         sensor: Optional[str] = None,
@@ -106,24 +105,33 @@ class GeoFusionRetriever:
             # Fallback for demo when no vectors are added yet
             mock_results = []
             for idx, record in self.metadata.items():
-                if retrieval_mode == "cross" and sensor and record.get("sensor") == sensor:
+                if (
+                    retrieval_mode == "cross"
+                    and sensor
+                    and record.get("sensor") == sensor
+                ):
                     continue
-                if retrieval_mode == "same" and sensor and record.get("sensor") != sensor:
+                if (
+                    retrieval_mode == "same"
+                    and sensor
+                    and record.get("sensor") != sensor
+                ):
                     continue
-                mock_results.append({
-                    "id": record.get("id", record.get("tile_id", str(idx))),
-                    "sensor": record.get("sensor", "unknown"),
-                    "similarity": max(0.4, 0.95 - (len(mock_results) * 0.05)),
-                    "location": {
-                        "lat": record.get("lat"),
-                        "lon": record.get("lon"),
-                    },
-                    "metadata": record
-                })
+                mock_results.append(
+                    {
+                        "id": record.get("id", record.get("tile_id", str(idx))),
+                        "sensor": record.get("sensor", "unknown"),
+                        "similarity": max(0.4, 0.95 - (len(mock_results) * 0.05)),
+                        "location": {
+                            "lat": record.get("lat"),
+                            "lon": record.get("lon"),
+                        },
+                        "metadata": record,
+                    }
+                )
                 if len(mock_results) >= top_k:
                     break
             return mock_results
-
 
         query = np.array([query_embedding], dtype="float32")
         # Over-fetch to allow for post-filtering by sensor
@@ -152,7 +160,7 @@ class GeoFusionRetriever:
                         "lat": record.get("lat"),
                         "lon": record.get("lon"),
                     },
-                    "metadata": record
+                    "metadata": record,
                 }
             )
             if len(results) >= top_k:

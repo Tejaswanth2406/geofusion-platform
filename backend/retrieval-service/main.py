@@ -47,8 +47,11 @@ try:
 except ValueError:
     # Metrics already registered (e.g. module reloaded during tests)
     from prometheus_client import REGISTRY
+
     SEARCH_COUNT = REGISTRY._names_to_collectors.get("geofusion_search_total")
-    SEARCH_LATENCY = REGISTRY._names_to_collectors.get("geofusion_search_latency_seconds")
+    SEARCH_LATENCY = REGISTRY._names_to_collectors.get(
+        "geofusion_search_latency_seconds"
+    )
 
 retriever: Optional[GeoFusionRetriever] = None
 

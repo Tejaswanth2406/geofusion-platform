@@ -1,0 +1,9 @@
+{
+  "_comment": "Place an eval_manifest.json here with query_embedding / relevant_ids records to enable backend/evaluation-service/evaluator.py benchmarking.",
+  "example_record": {
+    "query_id": "sar_001",
+    "query_embedding": "[...512 floats...]",
+    "query_sensor": "sar",
+    "relevant_ids": ["optical_001", "optical_002"]
+  }
+}

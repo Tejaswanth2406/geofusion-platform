@@ -2,9 +2,9 @@
 Tests for the GeoFusion Retrieval Service API endpoints.
 """
 
+import importlib.util
 import os
 import sys
-import importlib.util
 
 import pytest
 from fastapi.testclient import TestClient
