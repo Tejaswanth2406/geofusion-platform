@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/auth/:path*", "destination": "https://geofusion-platform.onrender.com/auth/:path*" },                                                     
+    { "source": "/api/:path*", "destination": "https://geofusion-platform.onrender.com/api/:path*" },
+    { "source": "/health", "destination": "https://geofusion-platform.onrender.com/health" }
+  ]
+}
