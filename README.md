@@ -36,8 +36,12 @@
   ## 📸 Screenshots
 
   | Login | Dashboard | Retrieval Results |
-  |---|---|---|
-  | ![Login](docs/screenshots/login.png) | ![Dashboard](docs/screenshots/dashboard.png) | ![Results](docs/screenshots/results.png) |
+  |---|---|---|  
+  | ![Login](https://github.com/user-attachments/assets/a86030ba-0049-4d77-8e3c-3707f9891b12) | ![Dashboard](https://github.com/user-attachments/assets/c357094d-1e9b-439b-bae3-fcb0a21a04e6) |
+  ![Results](https://github.com/user-attachments/assets/1999e5fd-e787-4210-8ef6-8afe1e7193d8) |
+
+
+
 
   🎥 **Demo Video:** [Watch on YouTube](YOUR_VIDEO_URL_HERE) *(2-3 min walkthrough)*
 
